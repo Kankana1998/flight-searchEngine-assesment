@@ -16,7 +16,7 @@ export const MainContent = () => {
   const showLandingPage = !hasResults && (!user || !hasBookings);
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
      
       {error && (
         <div className="mb-6 bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg">
