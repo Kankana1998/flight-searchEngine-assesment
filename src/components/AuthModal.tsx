@@ -15,7 +15,6 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [localError, setLocalError] = useState('');
-  const [showGoogleOptions, setShowGoogleOptions] = useState(false);
 
   const { login, signup, loginWithGoogle, isLoading, error } = useAuthStore();
 
@@ -205,7 +204,6 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                     setLocalError('');
                     setPassword('');
                     setConfirmPassword('');
-                    setShowGoogleOptions(false);
                   }}
                   className="text-sm text-gray-600 hover:text-primary-600 font-medium transition-colors"
                   disabled={isLoading}
