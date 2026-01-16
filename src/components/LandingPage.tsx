@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Plane, TrendingUp, MapPin, Clock, DollarSign, ArrowRight } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { useSearchFlights } from '../hooks/useSearchFlights';
 import { useFlightStore } from '../store/flightStore';
-import { useCurrencyStore, CURRENCIES } from '../store/currencyStore';
+import { useCurrencyStore } from '../store/currencyStore';
 import { format } from 'date-fns';
 
 interface PopularRoute {

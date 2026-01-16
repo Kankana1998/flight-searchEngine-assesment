@@ -16,7 +16,6 @@ class AmadeusAPI {
   }
 
   private async getAccessToken(): Promise<string> {
-    // Check if token is still valid (with 5 minute buffer)
     if (this.accessToken && Date.now() < this.tokenExpiry - 300000) {
       return this.accessToken;
     }
@@ -67,7 +66,7 @@ class AmadeusAPI {
         ...(params.infants && { infants: params.infants }),
         ...(params.travelClass && { travelClass: params.travelClass }),
         ...(params.nonStop !== undefined && { nonStop: params.nonStop }),
-        max: 50, // Limit results for better performance
+        max: 50,
       };
 
       const response = await this.client.get('/v2/shopping/flight-offers', {

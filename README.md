@@ -248,7 +248,7 @@ The application uses the Amadeus Self-Service API (Test environment) for flight 
 ## 🎨 Design System
 
 ### Colors
-- **Primary**: `#d77a61` (Coral/Orange)
+- **Primary**: `#03045e` (Coral/Orange)
 - **Secondary**: `#f5f5f5` (Light Gray)
 - Custom color scales for both
 

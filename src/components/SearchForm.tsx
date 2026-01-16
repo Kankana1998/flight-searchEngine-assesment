@@ -29,7 +29,6 @@ export const SearchForm = () => {
   const { flights, isLoading, setSearchParams } = useFlightStore();
   const hasResults = flights.length > 0;
 
-  // Set default departure date to tomorrow
   useEffect(() => {
     if (!departureDate) {
       const tomorrow = format(new Date(Date.now() + 86400000), 'yyyy-MM-dd');
@@ -79,7 +78,7 @@ export const SearchForm = () => {
               onClick={() => setTripType('one-way')}
               className={cn(
                 "flex-1 h-12 text-base font-semibold",
-                tripType === 'one-way' ? 'bg-primary hover:bg-primary/90' : ''
+                tripType === 'one-way' ? 'bg-primary text-white hover:bg-primary/90' : ''
               )}
             >
               One-way
@@ -90,7 +89,7 @@ export const SearchForm = () => {
               onClick={() => setTripType('round-trip')}
               className={cn(
                 "flex-1 h-12 text-base font-semibold",
-                tripType === 'round-trip' ? 'bg-primary hover:bg-primary/90' : ''
+                tripType === 'round-trip' ? 'bg-primary text-white hover:bg-primary/90' : ''
               )}
             >
               Round-trip
@@ -239,7 +238,7 @@ export const SearchForm = () => {
               type="submit"
               disabled={isLoading}
               size="lg"
-              className="w-full h-12 md:h-14 text-base font-semibold bg-primary hover:bg-primary/90"
+              className="w-full h-12 md:h-14 text-base font-semibold bg-primary text-white hover:bg-primary/90"
             >
               {isLoading ? (
                 <>

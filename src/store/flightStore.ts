@@ -53,7 +53,7 @@ export const useFlightStore = create<FlightState>((set, get) => ({
     
     let filtered = [...flights];
 
-    // Filter by price range
+   
     if (filters.minPrice !== undefined) {
       filtered = filtered.filter(
         (f) => parseFloat(f.price.total) >= filters.minPrice!
@@ -65,7 +65,7 @@ export const useFlightStore = create<FlightState>((set, get) => ({
       );
     }
 
-    // Filter by airlines
+  
     if (filters.airlines.length > 0) {
       filtered = filtered.filter((f) =>
         f.validatingAirlineCodes.some((code) =>
@@ -74,7 +74,7 @@ export const useFlightStore = create<FlightState>((set, get) => ({
       );
     }
 
-    // Filter by stops
+ 
     if (filters.stops.length > 0) {
       filtered = filtered.filter((f) => {
         const stops = getTotalStops(f);
@@ -82,7 +82,7 @@ export const useFlightStore = create<FlightState>((set, get) => ({
       });
     }
 
-    // Filter by duration
+  
     if (filters.duration) {
       filtered = filtered.filter((f) => {
         const durationStr = f.itineraries[0]?.duration || '';

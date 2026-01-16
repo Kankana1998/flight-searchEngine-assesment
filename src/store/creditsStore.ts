@@ -2,34 +2,59 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface CreditsState {
-  credits: number;
-  addCredits: (amount: number) => void;
-  deductCredits: (amount: number) => boolean;
-  getCredits: () => number;
+  userCredits: Record<string, number>; 
+  initializeUserCredits: (userId: string) => void;
+  addCredits: (userId: string, amount: number) => void;
+  deductCredits: (userId: string, amount: number) => boolean;
+  getCredits: (userId: string) => number;
 }
 
 export const useCreditsStore = create<CreditsState>()(
   persist(
     (set, get) => ({
-      credits: 1000, // Starting credits
+      userCredits: {},
 
-      addCredits: (amount) => {
-        set((state) => ({
-          credits: state.credits + amount,
-        }));
+      initializeUserCredits: (userId: string) => {
+        const state = get();
+        if (!state.userCredits[userId]) {
+          set((state) => ({
+            userCredits: {
+              ...state.userCredits,
+              [userId]: 1000, 
+            },
+          }));
+        }
       },
 
-      deductCredits: (amount) => {
-        const current = get().credits;
-        if (current >= amount) {
-          set({ credits: current - amount });
+      addCredits: (userId: string, amount: number) => {
+        const state = get();
+        const currentCredits = state.userCredits[userId] || 0;
+        set({
+          userCredits: {
+            ...state.userCredits,
+            [userId]: currentCredits + amount,
+          },
+        });
+      },
+
+      deductCredits: (userId: string, amount: number) => {
+        const state = get();
+        const currentCredits = state.userCredits[userId] || 0;
+        if (currentCredits >= amount) {
+          set({
+            userCredits: {
+              ...state.userCredits,
+              [userId]: currentCredits - amount,
+            },
+          });
           return true;
         }
         return false;
       },
 
-      getCredits: () => {
-        return get().credits;
+      getCredits: (userId: string) => {
+        const state = get();
+        return state.userCredits[userId] || 0;
       },
     }),
     {

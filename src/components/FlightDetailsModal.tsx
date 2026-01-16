@@ -11,8 +11,10 @@ import { useAuthStore } from '../store/authStore';
 import { useCurrencyStore } from '../store/currencyStore';
 import { useBookingStore } from '../store/bookingStore';
 import { useFlightStore } from '../store/flightStore';
+import { useCreditsStore } from '../store/creditsStore';
 import { AuthModal } from './AuthModal';
 import { BookingConfirmationDialog } from './BookingConfirmationDialog';
+import { AddCreditsModal } from './AddCreditsModal';
 import { Button } from './ui/button';
 
 interface FlightDetailsModalProps {
@@ -26,8 +28,12 @@ export const FlightDetailsModal = ({ flight, isOpen, onClose }: FlightDetailsMod
   const { convertPrice, formatPrice: formatCurrencyPrice } = useCurrencyStore();
   const { addBooking } = useBookingStore();
   const { searchParams } = useFlightStore();
+  const { deductCredits, getCredits } = useCreditsStore();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showAddCreditsModal, setShowAddCreditsModal] = useState(false);
+  const [isBooking, setIsBooking] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   if (!isOpen || !flight) return null;
 
@@ -35,23 +41,58 @@ export const FlightDetailsModal = ({ flight, isOpen, onClose }: FlightDetailsMod
   const stops = getTotalStops(flight);
   const convertedPrice = convertPrice(parseFloat(flight.price.total), flight.price.currency);
   const formattedPrice = formatCurrencyPrice(convertedPrice);
+  
+  const userId = user?.uid || '';
+  const userCredits = user ? getCredits(userId) : 0;
+  const priceInCredits = Math.ceil(convertedPrice); // Convert price to credits (1 credit = 1 unit of currency)
+  const hasEnoughCredits = userCredits >= priceInCredits;
 
-  const handleBookFlight = () => {
+  const handleBookFlight = async () => {
     if (!user) {
       setShowAuthModal(true);
       return;
     }
-    
-    // Add booking
-    addBooking({
-      flight,
-      passengerCount: searchParams?.adults || 1,
-      status: 'confirmed',
-      userId: user.email || user.uid || '',
-    });
 
-    // Show confirmation dialog
-    setShowConfirmation(true);
+    if (isBooking) return; // Prevent multiple clicks
+
+    setBookingError(null);
+    setIsBooking(true);
+
+    try {
+      // Check if user has enough credits
+      if (!hasEnoughCredits) {
+        setBookingError(`Insufficient credits. You need ${priceInCredits} credits but only have ${userCredits}.`);
+        setIsBooking(false);
+        return;
+      }
+
+      // Deduct credits
+      const creditsDeducted = deductCredits(userId, priceInCredits);
+      
+      if (!creditsDeducted) {
+        setBookingError('Failed to deduct credits. Please try again.');
+        setIsBooking(false);
+        return;
+      }
+
+      // Simulate booking delay for better UX
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Add booking
+      addBooking({
+        flight,
+        passengerCount: searchParams?.adults || 1,
+        status: 'confirmed',
+        userId: user.email || user.uid || '',
+      });
+
+      // Show confirmation dialog
+      setShowConfirmation(true);
+      setIsBooking(false);
+    } catch (error) {
+      setBookingError('An error occurred while booking. Please try again.');
+      setIsBooking(false);
+    }
   };
 
   const handleConfirmationClose = () => {
@@ -183,20 +224,62 @@ export const FlightDetailsModal = ({ flight, isOpen, onClose }: FlightDetailsMod
             </div>
           </div>
 
+          {/* Booking Error */}
+          {bookingError && (
+            <div className="px-6 py-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">{bookingError}</span>
+                {!hasEnoughCredits && user && (
+                  <Button
+                    onClick={() => {
+                      setShowAddCreditsModal(true);
+                      setBookingError(null);
+                    }}
+                    variant="default"
+                    size="sm"
+                    className="ml-4"
+                  >
+                    Add Credits
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Footer */}
-          <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4 flex items-center justify-end gap-3">
-            <Button
-              onClick={onClose}
-              variant="outline"
-            >
-              Close
-            </Button>
-            <Button
-              onClick={handleBookFlight}
-              variant="default"
-            >
-              {user ? 'Book Flight' : 'Sign In to Book'}
-            </Button>
+          <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-6 py-4">
+            {user && (
+              <div className="mb-3 flex items-center justify-between text-sm">
+                <span className="text-gray-600">Your Credits:</span>
+                <span className="font-semibold text-gray-900">
+                  {userCredits.toLocaleString()} credits
+                </span>
+              </div>
+            )}
+            <div className="flex items-center justify-end gap-3">
+              <Button
+                onClick={onClose}
+                variant="outline"
+                disabled={isBooking}
+              >
+                Close
+              </Button>
+              <Button
+                onClick={handleBookFlight}
+                variant="default"
+                isLoading={isBooking}
+                disabled={isBooking || !!(user && !hasEnoughCredits)}
+                className="min-w-[140px]"
+              >
+                {!user
+                  ? 'Sign In to Book'
+                  : !hasEnoughCredits
+                  ? `Need ${priceInCredits} Credits`
+                  : isBooking
+                  ? 'Booking...'
+                  : `Book for ${priceInCredits} Credits`}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -219,6 +302,17 @@ export const FlightDetailsModal = ({ flight, isOpen, onClose }: FlightDetailsMod
         flightId={flight.id}
         price={formattedPrice}
       />
+
+      {/* Add Credits Modal */}
+      {user && (
+        <AddCreditsModal
+          isOpen={showAddCreditsModal}
+          onClose={() => {
+            setShowAddCreditsModal(false);
+            setBookingError(null);
+          }}
+        />
+      )}
     </>
   );
 };

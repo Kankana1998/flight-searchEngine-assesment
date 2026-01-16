@@ -51,7 +51,7 @@ export interface FlightFilters {
   maxPrice?: number;
   minPrice?: number;
   airlines: string[];
-  stops: number[]; // 0 = non-stop, 1 = one stop, etc.
+  stops: number[]; 
   duration?: {
     min?: number;
     max?: number;

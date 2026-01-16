@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-// Exchange rates (in a real app, these would come from an API)
+
 const EXCHANGE_RATES: Record<string, number> = {
   USD: 1.0,
   EUR: 0.92,
@@ -63,15 +63,12 @@ export const useCurrencyStore = create<CurrencyState>()(
         const fromRate = EXCHANGE_RATES[fromCurrency] || 1;
         const toRate = EXCHANGE_RATES[targetCurrency] || 1;
 
-        // Convert to USD first, then to target currency
         const usdPrice = price / fromRate;
         return usdPrice * toRate;
       },
 
       formatPrice: (price, currency) => {
         const targetCurrency = currency || get().selectedCurrency;
-        const currencyInfo = CURRENCIES.find((c) => c.code === targetCurrency);
-        const symbol = currencyInfo?.symbol || '$';
 
         return new Intl.NumberFormat('en-US', {
           style: 'currency',

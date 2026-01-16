@@ -40,8 +40,7 @@ export const getStopsLabel = (stops: number): string => {
 
 export const getTotalStops = (flight: Flight): number => {
   const segments = flight.itineraries[0]?.segments || [];
-  // Number of stops = number of segments - 1
-  // 1 segment = 0 stops (direct), 2 segments = 1 stop, etc.
+
   return Math.max(0, segments.length - 1);
 };
 
@@ -71,7 +70,7 @@ export const generatePriceDataPoints = (flights: Flight[]): PriceDataPoint[] => 
 
   flights.forEach((flight) => {
     const price = parseFloat(flight.price.total);
-    const roundedPrice = Math.round(price / 50) * 50; // Round to nearest $50
+    const roundedPrice = Math.round(price / 50) * 50; 
     const key = roundedPrice.toString();
 
     if (priceMap.has(key)) {

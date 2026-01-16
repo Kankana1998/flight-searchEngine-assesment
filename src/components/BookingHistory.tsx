@@ -1,12 +1,13 @@
 import { useAuthStore } from '../store/authStore';
 import { useBookingStore } from '../store/bookingStore';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Plane, Calendar, MapPin, Clock, X } from 'lucide-react';
-import { formatPrice, formatDate, formatTime, getAirlineName, getTotalStops, getStopsLabel } from '../utils/flightUtils';
+import { Plane, X } from 'lucide-react';
+import { formatDate, formatTime, getAirlineName, getTotalStops, getStopsLabel } from '../utils/flightUtils';
 import { useCurrencyStore } from '../store/currencyStore';
 import { FlightDetailsModal } from './FlightDetailsModal';
+import { ConfirmDialog } from './ConfirmDialog';
 import { useState } from 'react';
 import type { Flight } from '../types';
 
@@ -16,6 +17,8 @@ export const BookingHistory = () => {
   const { convertPrice, formatPrice: formatCurrencyPrice } = useCurrencyStore();
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [cancelBookingId, setCancelBookingId] = useState<string | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   if (!user) {
     return (
@@ -143,9 +146,8 @@ export const BookingHistory = () => {
                         variant="destructive"
                         size="sm"
                         onClick={() => {
-                          if (confirm('Are you sure you want to cancel this booking?')) {
-                            cancelBooking(booking.id);
-                          }
+                          setCancelBookingId(booking.id);
+                          setShowConfirmDialog(true);
                         }}
                       >
                         <X className="w-4 h-4 mr-2" />
@@ -167,6 +169,24 @@ export const BookingHistory = () => {
           setIsModalOpen(false);
           setSelectedFlight(null);
         }}
+      />
+
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        onClose={() => {
+          setShowConfirmDialog(false);
+          setCancelBookingId(null);
+        }}
+        onConfirm={() => {
+          if (cancelBookingId) {
+            cancelBooking(cancelBookingId);
+          }
+        }}
+        title="Cancel Booking"
+        description="Are you sure you want to cancel this booking? This action cannot be undone."
+        confirmText="Yes, Cancel Booking"
+        cancelText="Keep Booking"
+        variant="destructive"
       />
     </div>
   );

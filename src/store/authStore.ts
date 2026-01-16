@@ -10,6 +10,7 @@ import {
   User,
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
+import { useCreditsStore } from './creditsStore';
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -18,7 +19,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   isInitialized: boolean;
-  
+
   setUser: (user: User | null) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -45,7 +46,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true, error: null });
         try {
           await signInWithEmailAndPassword(auth, email, password);
-          // User will be set by onAuthStateChanged
+
         } catch (error: any) {
           set({ error: error.message || 'Failed to sign in' });
           throw error;
@@ -57,8 +58,10 @@ export const useAuthStore = create<AuthState>()(
       signup: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          await createUserWithEmailAndPassword(auth, email, password);
-          // User will be set by onAuthStateChanged
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const userId = userCredential.user.uid;
+          useCreditsStore.getState().initializeUserCredits(userId);
+
         } catch (error: any) {
           set({ error: error.message || 'Failed to create account' });
           throw error;
@@ -70,8 +73,11 @@ export const useAuthStore = create<AuthState>()(
       loginWithGoogle: async () => {
         set({ isLoading: true, error: null });
         try {
-          await signInWithPopup(auth, googleProvider);
-          // User will be set by onAuthStateChanged
+          const userCredential = await signInWithPopup(auth, googleProvider);
+          const userId = userCredential.user.uid;
+
+          useCreditsStore.getState().initializeUserCredits(userId);
+      
         } catch (error: any) {
           set({ error: error.message || 'Failed to sign in with Google' });
           throw error;
@@ -94,16 +100,20 @@ export const useAuthStore = create<AuthState>()(
 
       initialize: () => {
         if (useAuthStore.getState().isInitialized) return;
-        
+
         set({ isInitialized: true });
         onAuthStateChanged(auth, (user) => {
           set({ user });
+
+          if (user) {
+            useCreditsStore.getState().initializeUserCredits(user.uid);
+          }
         });
       },
     }),
     {
       name: 'auth-storage',
-      // Don't persist user object - Firebase handles persistence via onAuthStateChanged
+
       partialize: () => ({}),
     }
   )
